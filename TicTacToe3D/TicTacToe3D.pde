@@ -23,7 +23,7 @@ boolean moves[][][][];
 
 PFont font;
 
-void setup() {
+void setup() { // Set size of window, frame rate, font, 
   size(800, 600, OPENGL);
   frameRate(25);
   
@@ -31,10 +31,10 @@ void setup() {
   textFont(font);
   textMode(SHAPE);
   
-  println(Serial.list());
-  serial = new Serial(this, Serial.list()[serialPort], 115200);
+  println(Serial.list()); // list of all avaliable serial ports
+  serial = new Serial(this, Serial.list()[serialPort], 115200); // opens port COM2 at a rate of 115200
   
-  for(int i = 0; i < sen; i++) {
+  for(int i = 0; i < sen; i++) { // for each sensor initialize a n Normalize object and a cama and axyz MomentumAverage object
     n[i] = new Normalize();
     cama[i] = new MomentumAverage(.01);
     axyz[i] = new MomentumAverage(.15);
@@ -48,7 +48,7 @@ void draw() {
   drawBoard();
 }
 
-void updateSerial() {
+void updateSerial() { // read from serial and interpret position values from data
   String cur = serial.readStringUntil('\n');
   if(cur != null) {
     //println(cur);
@@ -58,7 +58,7 @@ void updateSerial() {
       for(int i = 0; i < sen; i++)
         xyz[i] = float(parts[i]);
   
-      if(mousePressed && mouseButton == LEFT)
+      if(mousePressed && mouseButton == LEFT) // Define min and max values for each plate while left mouse button is pressed.
         for(int i = 0; i < sen; i++)
           n[i].note(xyz[i]);
   
@@ -75,7 +75,7 @@ void updateSerial() {
 }
 
 float cutoff = .2;
-int getPosition(float x) {
+int getPosition(float x) { // if div = 3, pos = 1,2,or 3 else position = x * div
   if(div == 3) {
     if(x < cutoff)
       return 0;
@@ -98,7 +98,7 @@ void drawBoard() {
     h + (cama[1].avg - 1) * height / 2,
     w * 2,
     h, h, h,
-    0, 1, 0);
+    0, 1, 0); // Set camera angle
 
   pushMatrix();
   
@@ -107,9 +107,9 @@ void drawBoard() {
   // We'll use a stroke for this one instead.
   noFill();
   stroke(0, 40);
-  translate(w/2, w/2, w/2);
-  rotateY(-HALF_PI/2);
-  box(w);
+  translate(w/2, w/2, w/2); // Translate to center of board
+  rotateY(-HALF_PI/2); // Rotate for 3D Effect
+  box(w); // Draw box outline
   popMatrix();
 
   float sw = w / div;
@@ -121,12 +121,13 @@ void drawBoard() {
   translate(
     axyz[0].avg * sd,
     axyz[1].avg * sd,
-    axyz[2].avg * sd);
-  fill(255, 160, 0, 200);
-  noStroke();
-  sphere(18);
-  popMatrix();
+    axyz[2].avg * sd); // Translate for sphere
+  fill(255, 160, 0, 200); // Set Sphere Color
+  noStroke(); // No Stroke for Sphere
+  sphere(18); // Draw sphere
+  popMatrix(); // Revert to old translation
 
+  // Draw Squares for tic tac toe
   for(int z = 0; z < div; z++) {
     for(int y = 0; y < div; y++) {
       for(int x = 0; x < div; x++) {
@@ -160,7 +161,7 @@ void drawBoard() {
     msg("defining boundaries");
 }
 
-void keyPressed() {
+void keyPressed() { // For Tic Tac Toe
   if(key == TAB) {
     moves[player][ixyz[0]][ixyz[1]][ixyz[2]] = true;
     player = player == 0 ? 1 : 0;
@@ -172,7 +173,7 @@ void mousePressed() {
     reset();
 }
 
-void reset() {
+void reset() { // Creates a new moves and resets all Normalize and Momentum Average objects.
   moves = new boolean[2][div][div][div];
   for(int i = 0; i < sen; i++) {
     n[i].reset();
