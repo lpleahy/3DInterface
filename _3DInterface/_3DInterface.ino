@@ -4,12 +4,12 @@
 // http://www.instructables.com/id/DIY-3D-Controller/
 
 #define resolution 8
-#define mains 50 // 60: north america, japan; 50: most other places
+#define mains 50 // 60: north america, japan; 50: most other places (DC frequency)
 
-#define refresh 2 * 1000000 / mains
+#define refresh 2 * 1000000 / mains // 2Mil / frequency 
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(115200); // Sets bits per second for data transmission
 
   // unused pins are fairly insignificant,
   // but pulled low to reduce unknown variables
@@ -38,15 +38,15 @@ long time(int pin, byte mask) {
   while(checkTimer() < refresh) {
     // pinMode is about 6 times slower than assigning
     // DDRB directly, but that pause is important
-    pinMode(pin, OUTPUT);
-    PORTB = 0;
-    pinMode(pin, INPUT);
-    while((PINB & mask) == 0)
+    pinMode(pin, OUTPUT); // Reconfigures pin as an output
+    PORTB = 0; // Sets pin voltage to 0V
+    pinMode(pin, INPUT); // Reconfigures pin as an input
+    while((PINB & mask) == 0) // If voltage at the pin is less than 3.0V
       count++;
     total++;
   }
   startTimer();
-  return (count << resolution) / total;
+  return (count << resolution) / total; // Average count value * 2^8.
 }
 
 extern volatile unsigned long timer0_overflow_count;
@@ -57,7 +57,7 @@ void startTimer() {
 }
 
 unsigned long checkTimer() {
-  return ((timer0_overflow_count << 8) + TCNT0) << 2;
+  return ((timer0_overflow_count << 8) + TCNT0) << 2; // TCNTO (8-bit) increments every clock tick, clock is 16Mhz, timer0_overflow_count ticks every time TCNTO overflows which is why we do <<8. (<<2 scales result)
 }
 
 
